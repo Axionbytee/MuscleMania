@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Member Status Viewer</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="fonts.css">
+
+</head>
+<body>
+
+  <div class="viewport-container" id="container">
+    <div class="full-bg"></div>
+
+    <button class="nav-btn" onclick="nextCard()">Next</button>
+
+    <div class="membership-card">
+      <div class="status-badge badge-good" id="statusLabel">ACTIVE</div>
+      
+      <div class="card-left">
+        <div class="top-row">
+          <h1 class="brand-name">MUSCLE MANIA</h1>
+          <h2 class="card-title">MONTHLY CARD</h2>
+        </div>
+
+        <div class="name-row">
+          <div class="name-pill">CHARLES GIANN MARCELO</div>
+        </div>
+
+        <div class="bottom-row">
+          <div class="date-item">
+            <label>DATE ISSUED:</label>
+            <span class="date-val" id="issuedDate">MARCH 18, 2026</span>
+          </div>
+          <div class="date-item">
+            <label>VALID UNTIL:</label>
+            <span class="date-val" id="expiryDate">APRIL 17, 2026</span>
+          </div>
+        </div>
+      </div>
+<div class="card-right">
+  <!--Pogi Si Naig-->
+        <img src="Images/Naig.png" alt="Client Face" class="client-photo">
+        
+        <div id="expiry-timer"> </div>
+      </div>
+    </div>
+  </div>
+
+<script src="script.js"></script>
+</body>
+</html>
