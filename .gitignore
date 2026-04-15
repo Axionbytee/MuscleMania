@@ -1,3 +1,4 @@
 .env
 package-lock.jsons
 node_modules/
+.github/
