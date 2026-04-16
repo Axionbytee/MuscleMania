@@ -5,6 +5,9 @@ import AttendanceLog from '../models/AttendanceLog.js';
 
 const router = Router();
 
+// Capture mode state — used for "Scan Now" in the admin member form
+let captureMode = { active: false, uid: null, timestamp: null };
+
 /**
  * POST /api/scan
  * Core scan endpoint — validates RFID UID, computes membership status,
@@ -16,6 +19,13 @@ router.post('/', async (req, res) => {
 
     if (!uid || typeof uid !== 'string') {
       return res.status(400).json({ error: 'uid is required' });
+    }
+
+    // Capture mode: intercept scan for admin form instead of normal processing
+    if (captureMode.active) {
+      captureMode.uid = uid.trim();
+      captureMode.active = false;
+      return res.json({ captured: true });
     }
 
     // 1. Look up RFID card by UID

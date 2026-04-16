@@ -266,6 +266,10 @@
           <label for="rfidUid">RFID UID</label>
           <input type="text" id="rfidUid" placeholder="Scan or enter manually" />
         </div>
+        <div class="form-group">
+          <button type="button" id="scanCardBtn" onclick="startRfidCapture()">Scan Card</button>
+          <span id="scanStatus"></span>
+        </div>
         <div class="modal-actions">
           <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
           <button type="submit" class="btn-save">Save</button>
@@ -460,6 +464,24 @@
       } catch (err) {
         alert(err.message);
       }
+    }
+
+    let scanPollInterval = null;
+    async function startRfidCapture() {
+      document.getElementById('scanStatus').textContent = 'Waiting for scan...';
+      document.getElementById('scanCardBtn').disabled = true;
+      const token = localStorage.getItem('mm_token');
+      await fetch('/api/scan/capture/start', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+      scanPollInterval = setInterval(async () => {
+        const res = await fetch('/api/scan/capture/result', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.captured) {
+          clearInterval(scanPollInterval);
+          document.getElementById('rfidUid').value = data.uid;
+          document.getElementById('scanStatus').textContent = 'Card captured!';
+          document.getElementById('scanCardBtn').disabled = false;
+        }
+      }, 1000);
     }
 
     loadMembers();
