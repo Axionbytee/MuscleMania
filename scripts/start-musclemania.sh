@@ -4,6 +4,10 @@
 # Deploy: cp scripts/musclemania.desktop ~/.config/autostart/
 # Runs automatically on LXDE desktop login.
 
+# Source NVM to ensure Node.js is available in this shell context
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
 # Wait for desktop to be fully ready before doing anything
 sleep 5
 

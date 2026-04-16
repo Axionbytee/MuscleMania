@@ -84,3 +84,4 @@ bash ~/MuscleMania/scripts/start-musclemania.sh
 - **Backend not starting**: Run `pm2 logs musclemania-backend` to check for errors.
 - **Scanner not starting**: Run `pm2 logs musclemania-scanner` to check Python/SPI errors.
 - **MongoDB not starting**: Run `sudo systemctl status mongod` to check status.
+- **NVM packages lost after reboot**: The startup script now sources NVM automatically. If Node.js is still not found, verify NVM is installed at `~/.nvm` or switch to system Node.js: `sudo apt install nodejs npm`.
