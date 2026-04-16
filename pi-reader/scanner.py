@@ -31,14 +31,25 @@ if IS_PI:
     # bus=1, device=0 → /dev/spidev1.0
     # pin_ce=0  → use hardware SPI1 CE0 (Board Pin 12 / GPIO18) via spidev; no GPIO needed
     # pin_rst   → RC522 RST line; adjust PIN_RST if wired to a different GPIO
-    PIN_RST = 25
+    # NOTE: If using Waveshare LCD or other overlays, GPIO 25 may be in use.
+    #       Common alternatives: GPIO 23 (Pin 16), GPIO 24 (Pin 18), GPIO 27 (Pin 13)
+    PIN_RST = 23  # Default to GPIO 23 to avoid conflicts with common LCD overlays
     
     try:
         reader = MFRC522(bus=1, device=0, pin_rst=PIN_RST)
         print("[INFO] MFRC522 initialized on SPI1")
     except ValueError as e:
         print(f"[ERROR] Failed to initialize MFRC522: {e}")
-        print("[ERROR] Check RC522 wiring and pin_rst value")
+        print(f"[ERROR] GPIO pin {PIN_RST} initialization failed")
+        print("[ERROR] Possible causes:")
+        print(f"  1. RC522 RST is wired to a different GPIO pin (update PIN_RST = <pin_number>)")
+        print(f"  2. GPIO {PIN_RST} is already in use by another process")
+        print(f"  3. /boot/config.txt missing: dtoverlay=spi1-3cs")
+        print("[ERROR] Run 'python3 diagnose_rc522.py' for detailed diagnostics")
+        sys.exit(1)
+    except Exception as e:
+        print(f"[ERROR] Unexpected MFRC522 error: {e}")
+        print("[ERROR] Run 'python3 diagnose_rc522.py' for detailed diagnostics")
         sys.exit(1)
 else:
     print("[WARNING] Not running on Raspberry Pi — scanner will be simulated")
