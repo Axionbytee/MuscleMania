@@ -22,6 +22,7 @@ if IS_PI:
     try:
         from mfrc522 import MFRC522
         import RPi.GPIO as GPIO
+        GPIO.setwarnings(False)  # Suppress GPIO warning noise
     except ImportError as e:
         print(f"[ERROR] Pi hardware libraries not found: {e}")
         print("[ERROR] Install with: pip install mfrc522 RPi.GPIO")
