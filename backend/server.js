@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -6,14 +6,16 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
+// Load .env from backend directory (PM2 starts from root)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: join(__dirname, '.env') });
+
 import connectDB from './models/connect.js';
 import scanRoutes from './routes/scan.js';
 import memberRoutes from './routes/members.js';
 import attendanceRoutes from './routes/attendance.js';
 import authRoutes from './routes/auth.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const app = express();
 const server = createServer(app);
