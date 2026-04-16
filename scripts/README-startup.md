@@ -31,11 +31,33 @@ cp ~/MuscleMania/scripts/musclemania.desktop ~/.config/autostart/
 pm2 startup
 ```
 
-Run the command it outputs (copy/paste and run it), then save the process list:
+**IMPORTANT**: PM2 will output a long command. Copy/paste and run it in your terminal:
+
+```bash
+sudo env PATH=$PATH:/your/nvm/path/bin /your/nvm/path/lib/node_modules/pm2/bin/pm2 startup systemd -u <username> --hp /home/<username>
+```
+
+(Use the exact command PM2 outputs for your system)
+
+After that completes, start your backend so PM2 has something to save:
+
+```bash
+bash ~/MuscleMania/scripts/start-musclemania.sh
+```
+
+Or manually:
+
+```bash
+pm2 start ecosystem.config.js
+```
+
+Once the backend is running via PM2, save the process list:
 
 ```bash
 pm2 save
 ```
+
+You should see: `[PM2] Saving current process list...`
 
 ### 4. Allow mongod to start without a password prompt (sudoers)
 

@@ -9,20 +9,41 @@ Hardware: RC522 on SPI1 (/dev/spidev1.0)
   RST  → Board Pin 22 (GPIO25) — connect RC522 RST here; change PIN_RST if wired elsewhere
 """
 
-import RPi.GPIO as GPIO
-from mfrc522 import MFRC522
-import requests
+import os
+import sys
 import json
 import time
-import os
+import requests
 
-# ── SPI1 Configuration ───────────────────────────────────────────────────────
-# bus=1, device=0 → /dev/spidev1.0
-# pin_ce=0  → use hardware SPI1 CE0 (Board Pin 12 / GPIO18) via spidev; no GPIO needed
-# pin_rst   → RC522 RST line; adjust PIN_RST if wired to a different GPIO
-PIN_RST = 25
+# Detect if running on Raspberry Pi
+IS_PI = os.path.exists('/sys/firmware/devicetree/base/model')
 
-reader = MFRC522(bus=1, device=0, pin_rst=PIN_RST)
+if IS_PI:
+    try:
+        from mfrc522 import MFRC522
+        import RPi.GPIO as GPIO
+    except ImportError as e:
+        print(f"[ERROR] Pi hardware libraries not found: {e}")
+        print("[ERROR] Install with: pip install mfrc522 RPi.GPIO")
+        sys.exit(1)
+    
+    # ── SPI1 Configuration ───────────────────────────────────────────────────────
+    # bus=1, device=0 → /dev/spidev1.0
+    # pin_ce=0  → use hardware SPI1 CE0 (Board Pin 12 / GPIO18) via spidev; no GPIO needed
+    # pin_rst   → RC522 RST line; adjust PIN_RST if wired to a different GPIO
+    PIN_RST = 25
+    
+    try:
+        reader = MFRC522(bus=1, device=0, pin_rst=PIN_RST)
+        print("[INFO] MFRC522 initialized on SPI1")
+    except ValueError as e:
+        print(f"[ERROR] Failed to initialize MFRC522: {e}")
+        print("[ERROR] Check RC522 wiring and pin_rst value")
+        sys.exit(1)
+else:
+    print("[WARNING] Not running on Raspberry Pi — scanner will be simulated")
+    print("[INFO] This is normal for dev machines. Real scanning only works on Pi hardware.")
+    reader = None
 # ─────────────────────────────────────────────────────────────────────────────
 
 BACKEND_URL = "http://localhost:3000/api/scan"
@@ -44,7 +65,12 @@ def uid_to_str(uid_bytes):
 
 def read_card():
     """Poll for a card using the low-level MFRC522 API.
-    Returns a UID string or None if no card is in range."""
+    Returns a UID string or None if no card is in range.
+    On dev machines (no Pi hardware), returns None."""
+    if reader is None:
+        # Dev machine — no hardware to read from
+        return None
+    
     (status, _tag_type) = reader.MFRC522_Request(reader.PICC_REQIDL)
     if status != reader.MI_OK:
         return None
