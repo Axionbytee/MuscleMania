@@ -61,9 +61,21 @@ After reboot, the Pi should automatically open Chromium in kiosk mode on the gat
 
 ## Manual Start (Without Reboot)
 
+This works on both Pi and dev machines:
+
 ```bash
 bash ~/MuscleMania/scripts/start-musclemania.sh
 ```
+
+**On a dev machine (Windows/Mac/Linux):**
+- Ensure MongoDB is running (via Docker, local install, or cloud Atlas)
+- The script will skip MongoDB systemctl startup automatically
+- Make sure Node.js and PM2 are installed: `npm install -g pm2`
+- Run the script from the project folder or anywhere with a valid path
+
+**On Pi (Raspberry OS):**
+- Follow the one-time setup steps above first
+- Run after reboot, or use this command anytime to restart
 
 ---
 
@@ -82,6 +94,7 @@ bash ~/MuscleMania/scripts/start-musclemania.sh
 
 - **Browser doesn't open**: Check `DISPLAY=:0` is available. Run `echo $DISPLAY` in a terminal on the Pi.
 - **Backend not starting**: Run `pm2 logs musclemania-backend` to check for errors.
-- **Scanner not starting**: Run `pm2 logs musclemania-scanner` to check Python/SPI errors.
-- **MongoDB not starting**: Run `sudo systemctl status mongod` to check status.
+- **Scanner not starting**: Run `pm2 logs musclemania-scanner` to check Python/SPI errors (Pi only).
+- **MongoDB not starting**: On Pi, run `sudo systemctl status mongod`. On dev machines, ensure MongoDB is running via Docker, local install, or Atlas.
 - **NVM packages lost after reboot**: The startup script now sources NVM automatically. If Node.js is still not found, verify NVM is installed at `~/.nvm` or switch to system Node.js: `sudo apt install nodejs npm`.
+- **"Could not navigate to project root" error**: The script uses dynamic path detection. Ensure it's run from the MuscleMania project folder or that the script is in `scripts/` subdirectory.

@@ -11,14 +11,22 @@ export NVM_DIR="$HOME/.nvm"
 # Wait for desktop to be fully ready before doing anything
 sleep 5
 
-# Ensure MongoDB is running
-sudo systemctl start mongod
+# Detect project root dynamically (works on Pi, dev machine, or any path)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Navigate to project root (required — ecosystem.config.js uses relative paths)
-cd /home/pi/MuscleMania || {
-    echo "ERROR: /home/pi/MuscleMania not found. Aborting."
+cd "$PROJECT_ROOT" || {
+    echo "ERROR: Could not navigate to project root at $PROJECT_ROOT. Aborting."
     exit 1
 }
+
+# Try to start MongoDB (skip if not available — ok for dev machines)
+if command -v systemctl &> /dev/null; then
+    sudo systemctl start mongod 2>/dev/null || echo "[INFO] MongoDB service not available (normal on dev machines)"
+else
+    echo "[INFO] systemctl not found — skipping MongoDB startup"
+fi
 
 # Start all PM2 apps (backend + scanner.py).
 # If already running, restart them cleanly.
