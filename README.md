@@ -116,3 +116,16 @@ const data = [
 ---
 
 **Last Updated**: April 16, 2026
+
+
+---
+Near future feature that if the member availed the vip membership, that is 3 months advance of payment that total cost  1800 pesos. they can acesss any branches.
+so the #./backend/models/member.js will having a vip status true or false and including where branced mainly registered.
+
+adding this
+
+{
+  vipStatus: true/false,
+  branch: "" //location or branch number.
+
+}

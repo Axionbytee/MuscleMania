@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=MuscleMania Startup
+Comment=Start MuscleMania backend and kiosk browser
+Exec=/bin/bash /home/pi/MuscleMania/scripts/start-musclemania.sh
+X-GNOME-Autostart-enabled=true
+Hidden=false
+NoDisplay=false
