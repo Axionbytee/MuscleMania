@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MuscleMania — Gate Display</title>
+  <link rel="stylesheet" href="src/css/fonts.css" />
+  <link rel="stylesheet" href="src/css/style.css" />
+</head>
+<body>
+
+  <!-- IDLE SCREEN — shown when no card is scanned -->
+  <div id="idle-screen" class="idle-screen">
+    <div class="idle-content">
+      <img src="src/assets/images/bgImage.png" alt="MuscleMania Logo" class="idle-logo pulse" />
+      <p class="idle-text">Tap your card</p>
+    </div>
+  </div>
+
+  <!-- MEMBERSHIP CARD — shown after RFID scan -->
+  <div id="container" class="viewport-container status-valid" style="display: none;">
+    <div class="full-bg"></div>
+
+    <div class="membership-card">
+      <!-- Status badge -->
+      <span id="statusLabel" class="status-badge badge-good">ACTIVE</span>
+
+      <div class="card-left">
+        <div>
+          <p class="brand-name">MuscleMania</p>
+          <h1 class="card-title">MEMBERSHIP<br>CARD</h1>
+        </div>
+
+        <div class="name-pill" id="memberName">— — —</div>
+
+        <div class="bottom-row">
+          <div class="date-item">
+            <label>Issued</label>
+            <span class="date-val" id="issuedDate">— — —</span>
+          </div>
+          <div class="date-item">
+            <label>Expires</label>
+            <span class="date-val" id="expiryDate">— — —</span>
+          </div>
+        </div>
+
+        <div id="expiry-timer"></div>
+      </div>
+
+      <div class="card-right">
+        <img id="memberPhoto" class="client-photo" src="src/assets/images/Naig.png" alt="Member Photo" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Socket.io client served by Express -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="src/js/script.js"></script>
+</body>
+</html>

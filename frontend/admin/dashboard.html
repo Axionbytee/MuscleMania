@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MuscleMania — Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: #0d1117;
+      color: #fff;
+      min-height: 100vh;
+    }
+    nav {
+      background: rgba(0,0,0,0.6);
+      padding: 16px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    nav .brand { font-size: 20px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+    nav .nav-links a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      margin-left: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+    nav .nav-links a:hover, nav .nav-links a.active { color: #2ecc71; }
+    .btn-logout {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-left: 24px;
+    }
+    .btn-logout:hover { border-color: #e74c3c; color: #e74c3c; }
+    .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+    }
+    .stat-card .stat-value {
+      font-size: 48px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .stat-card .stat-label {
+      font-size: 14px;
+      opacity: 0.6;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .stat-card.active .stat-value { color: #2ecc71; }
+    .stat-card.expired .stat-value { color: #e74c3c; }
+    .stat-card.expiring .stat-value { color: #f1c40f; }
+    .stat-card.total .stat-value { color: #3498db; }
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    thead { background: rgba(255,255,255,0.06); }
+    th, td {
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    th {
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 12px;
+      opacity: 0.6;
+    }
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="brand">MuscleMania</span>
+    <div class="nav-links">
+      <a href="/admin/dashboard.html" class="active">Dashboard</a>
+      <a href="/admin/members.html">Members</a>
+      <a href="/admin/attendance.html">Attendance</a>
+      <button class="btn-logout" id="logoutBtn">Logout</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-value" id="totalCount">—</div>
+        <div class="stat-label">Total Members</div>
+      </div>
+      <div class="stat-card active">
+        <div class="stat-value" id="activeCount">—</div>
+        <div class="stat-label">Active</div>
+      </div>
+      <div class="stat-card expiring">
+        <div class="stat-value" id="expiringCount">—</div>
+        <div class="stat-label">Expiring Soon</div>
+      </div>
+      <div class="stat-card expired">
+        <div class="stat-value" id="expiredCount">—</div>
+        <div class="stat-label">Expired</div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Recent Scans</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Member</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody id="recentScans">
+        <tr><td colspan="3" style="text-align:center;opacity:0.5;">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('mm_token');
+    if (!token) window.location.href = '/admin/index.html';
+
+    const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('mm_token');
+      localStorage.removeItem('mm_user');
+      window.location.href = '/admin/index.html';
+    });
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/members', { headers });
+        if (res.status === 401) { window.location.href = '/admin/index.html'; return; }
+        const members = await res.json();
+
+        const now = new Date();
+        let active = 0, expired = 0, expiring = 0;
+
+        for (const m of members) {
+          const exp = new Date(m.expirationDate);
+          const diff = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
+          if (diff < 0) expired++;
+          else if (diff <= 7) expiring++;
+          else active++;
+        }
+
+        document.getElementById('totalCount').textContent = members.length;
+        document.getElementById('activeCount').textContent = active;
+        document.getElementById('expiringCount').textContent = expiring;
+        document.getElementById('expiredCount').textContent = expired;
+      } catch (err) {
+        console.error('Failed to load stats:', err);
+      }
+    }
+
+    async function loadRecentScans() {
+      try {
+        const res = await fetch('/api/attendance?limit=10', { headers });
+        if (!res.ok) return;
+        const logs = await res.json();
+        const tbody = document.getElementById('recentScans');
+
+        if (logs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;opacity:0.5;">No scans yet</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = logs.map((log) => {
+          const time = new Date(log.scannedAt).toLocaleString('en-US', { timeZone: 'Asia/Manila' });
+          return `<tr><td>${time}</td><td>${log.memberName}</td><td>${log.entryType}</td></tr>`;
+        }).join('');
+      } catch (err) {
+        console.error('Failed to load scans:', err);
+      }
+    }
+
+    loadStats();
+    loadRecentScans();
+    setInterval(loadRecentScans, 30000);
+  </script>
+</body>
+</html>

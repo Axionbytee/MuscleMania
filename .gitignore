@@ -1,4 +1,8 @@
 .env
-package-lock.jsons
+package-lock.json
 node_modules/
+backend/uploads/
+pi-reader/offline_queue.json
 .github/
+.alpackages/
+CONTEXT.md

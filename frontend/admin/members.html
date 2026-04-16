@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MuscleMania — Members</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: #0d1117;
+      color: #fff;
+      min-height: 100vh;
+    }
+    nav {
+      background: rgba(0,0,0,0.6);
+      padding: 16px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    nav .brand { font-size: 20px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+    nav .nav-links a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      margin-left: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+    nav .nav-links a:hover, nav .nav-links a.active { color: #2ecc71; }
+    .btn-logout {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-left: 24px;
+    }
+    .btn-logout:hover { border-color: #e74c3c; color: #e74c3c; }
+    .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      padding: 12px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      font-size: 14px;
+      width: 300px;
+      outline: none;
+    }
+    .search-input:focus { border-color: #2ecc71; }
+    .btn-add {
+      padding: 12px 24px;
+      background: #008080;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .btn-add:hover { background: #00a3a3; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    thead { background: rgba(255,255,255,0.06); }
+    th, td {
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    th {
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 12px;
+      opacity: 0.6;
+    }
+    .badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-active { background: #2ecc71; color: #fff; }
+    .badge-expired { background: #e74c3c; color: #fff; }
+    .badge-expiring { background: #f1c40f; color: #000; }
+    .btn-action {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: transparent;
+      color: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      margin-right: 6px;
+    }
+    .btn-action:hover { background: rgba(255,255,255,0.1); }
+    .btn-action.delete:hover { border-color: #e74c3c; color: #e74c3c; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: #1a1f2e;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 40px;
+      width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal h2 {
+      margin-bottom: 24px;
+      font-size: 22px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .modal .form-group {
+      margin-bottom: 16px;
+    }
+    .modal .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+      opacity: 0.7;
+    }
+    .modal .form-group input,
+    .modal .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+    .modal .form-group input:focus,
+    .modal .form-group select:focus { border-color: #2ecc71; }
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .modal-actions button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: none;
+    }
+    .btn-save { background: #008080; color: #fff; }
+    .btn-save:hover { background: #00a3a3; }
+    .btn-cancel { background: rgba(255,255,255,0.1); color: #fff; }
+    .btn-cancel:hover { background: rgba(255,255,255,0.2); }
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="brand">MuscleMania</span>
+    <div class="nav-links">
+      <a href="/admin/dashboard.html">Dashboard</a>
+      <a href="/admin/members.html" class="active">Members</a>
+      <a href="/admin/attendance.html">Attendance</a>
+      <button class="btn-logout" id="logoutBtn">Logout</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="toolbar">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search by name or status..." />
+      <button class="btn-add" id="addBtn">+ Add Member</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Expiry</th>
+          <th>Status</th>
+          <th>RFID UID</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="memberTable">
+        <tr><td colspan="6" style="text-align:center;opacity:0.5;">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Add/Edit Member Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h2 id="modalTitle">Add Member</h2>
+      <form id="memberForm">
+        <input type="hidden" id="editId" />
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" required />
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" />
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input type="text" id="phone" />
+        </div>
+        <div class="form-group">
+          <label for="issueDate">Issue Date</label>
+          <input type="date" id="issueDate" required />
+        </div>
+        <div class="form-group">
+          <label for="expirationDate">Expiration Date</label>
+          <input type="date" id="expirationDate" required />
+        </div>
+        <div class="form-group">
+          <label for="membershipType">Membership Type</label>
+          <select id="membershipType">
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="annual">Annual</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="rfidUid">RFID UID</label>
+          <input type="text" id="rfidUid" placeholder="Scan or enter manually" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn-save">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Renew Modal -->
+  <div class="modal-overlay" id="renewOverlay">
+    <div class="modal">
+      <h2>Renew Membership</h2>
+      <form id="renewForm">
+        <input type="hidden" id="renewId" />
+        <div class="form-group">
+          <label for="renewDate">New Expiration Date</label>
+          <input type="date" id="renewDate" required />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="renewCancelBtn">Cancel</button>
+          <button type="submit" class="btn-save">Renew</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('mm_token');
+    if (!token) window.location.href = '/admin/index.html';
+    const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+    let allMembers = [];
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('mm_token');
+      localStorage.removeItem('mm_user');
+      window.location.href = '/admin/index.html';
+    });
+
+    // --- Load members ---
+    async function loadMembers() {
+      try {
+        const res = await fetch('/api/members', { headers });
+        if (res.status === 401) { window.location.href = '/admin/index.html'; return; }
+        allMembers = await res.json();
+        renderTable(allMembers);
+      } catch (err) {
+        console.error('Failed to load members:', err);
+      }
+    }
+
+    function getStatus(expirationDate) {
+      const now = new Date();
+      const exp = new Date(expirationDate);
+      const diff = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
+      if (diff < 0) return { label: 'Expired', cls: 'badge-expired' };
+      if (diff <= 7) return { label: 'Expiring', cls: 'badge-expiring' };
+      return { label: 'Active', cls: 'badge-active' };
+    }
+
+    function renderTable(members) {
+      const tbody = document.getElementById('memberTable');
+      if (members.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;opacity:0.5;">No members found</td></tr>';
+        return;
+      }
+      tbody.innerHTML = members.map((m) => {
+        const st = getStatus(m.expirationDate);
+        const expDate = new Date(m.expirationDate).toLocaleDateString('en-US', { timeZone: 'Asia/Manila' });
+        return `<tr>
+          <td>${m.fullName}</td>
+          <td style="text-transform:capitalize">${m.membershipType}</td>
+          <td>${expDate}</td>
+          <td><span class="badge ${st.cls}">${st.label}</span></td>
+          <td>${m.rfidUid || '—'}</td>
+          <td>
+            <button class="btn-action" onclick="openRenew('${m._id}')">Renew</button>
+            <button class="btn-action" onclick="openEdit('${m._id}')">Edit</button>
+            <button class="btn-action delete" onclick="deleteMember('${m._id}', '${m.fullName}')">Delete</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    // --- Search ---
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      const filtered = allMembers.filter((m) => {
+        const st = getStatus(m.expirationDate).label.toLowerCase();
+        return m.fullName.toLowerCase().includes(q) || st.includes(q);
+      });
+      renderTable(filtered);
+    });
+
+    // --- Add / Edit Modal ---
+    const modal = document.getElementById('modalOverlay');
+    const form = document.getElementById('memberForm');
+
+    document.getElementById('addBtn').addEventListener('click', () => {
+      document.getElementById('modalTitle').textContent = 'Add Member';
+      form.reset();
+      document.getElementById('editId').value = '';
+      modal.classList.add('show');
+    });
+
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+      modal.classList.remove('show');
+    });
+
+    function openEdit(id) {
+      const m = allMembers.find((x) => x._id === id);
+      if (!m) return;
+      document.getElementById('modalTitle').textContent = 'Edit Member';
+      document.getElementById('editId').value = m._id;
+      document.getElementById('fullName').value = m.fullName;
+      document.getElementById('email').value = m.email || '';
+      document.getElementById('phone').value = m.phone || '';
+      document.getElementById('issueDate').value = m.issueDate ? m.issueDate.substring(0, 10) : '';
+      document.getElementById('expirationDate').value = m.expirationDate ? m.expirationDate.substring(0, 10) : '';
+      document.getElementById('membershipType').value = m.membershipType || 'monthly';
+      document.getElementById('rfidUid').value = m.rfidUid || '';
+      modal.classList.add('show');
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const editId = document.getElementById('editId').value;
+      const body = {
+        fullName: document.getElementById('fullName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        issueDate: document.getElementById('issueDate').value,
+        expirationDate: document.getElementById('expirationDate').value,
+        membershipType: document.getElementById('membershipType').value,
+        rfidUid: document.getElementById('rfidUid').value
+      };
+
+      try {
+        const url = editId ? `/api/members/${editId}` : '/api/members';
+        const method = editId ? 'PUT' : 'POST';
+        const res = await fetch(url, { method, headers, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Save failed');
+        modal.classList.remove('show');
+        loadMembers();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    // --- Renew Modal ---
+    const renewOverlay = document.getElementById('renewOverlay');
+    const renewForm = document.getElementById('renewForm');
+
+    function openRenew(id) {
+      document.getElementById('renewId').value = id;
+      document.getElementById('renewDate').value = '';
+      renewOverlay.classList.add('show');
+    }
+
+    document.getElementById('renewCancelBtn').addEventListener('click', () => {
+      renewOverlay.classList.remove('show');
+    });
+
+    renewForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('renewId').value;
+      const expirationDate = document.getElementById('renewDate').value;
+
+      try {
+        const res = await fetch(`/api/members/${id}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ expirationDate })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Renew failed');
+        renewOverlay.classList.remove('show');
+        loadMembers();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    // --- Delete ---
+    async function deleteMember(id, name) {
+      if (!confirm(`Delete member "${name}"? This cannot be undone.`)) return;
+      try {
+        const res = await fetch(`/api/members/${id}`, { method: 'DELETE', headers });
+        if (!res.ok) throw new Error('Delete failed');
+        loadMembers();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    loadMembers();
+  </script>
+</body>
+</html>

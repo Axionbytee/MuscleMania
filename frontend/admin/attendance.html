@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MuscleMania — Attendance</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: #0d1117;
+      color: #fff;
+      min-height: 100vh;
+    }
+    nav {
+      background: rgba(0,0,0,0.6);
+      padding: 16px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    nav .brand { font-size: 20px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+    nav .nav-links a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      margin-left: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+    nav .nav-links a:hover, nav .nav-links a.active { color: #2ecc71; }
+    .btn-logout {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-left: 24px;
+    }
+    .btn-logout:hover { border-color: #e74c3c; color: #e74c3c; }
+    .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .date-picker {
+      padding: 12px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+    .date-picker:focus { border-color: #2ecc71; }
+    .btn-export {
+      padding: 12px 24px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .btn-export:hover { background: rgba(255,255,255,0.2); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    thead { background: rgba(255,255,255,0.06); }
+    th, td {
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    th {
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 12px;
+      opacity: 0.6;
+    }
+    .total-row {
+      margin-top: 16px;
+      font-size: 14px;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="brand">MuscleMania</span>
+    <div class="nav-links">
+      <a href="/admin/dashboard.html">Dashboard</a>
+      <a href="/admin/members.html">Members</a>
+      <a href="/admin/attendance.html" class="active">Attendance</a>
+      <button class="btn-logout" id="logoutBtn">Logout</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="toolbar">
+      <div>
+        <label for="dateFilter" style="font-size:13px;opacity:0.6;margin-right:10px;">Date:</label>
+        <input type="date" class="date-picker" id="dateFilter" />
+      </div>
+      <button class="btn-export" id="exportBtn">Export CSV</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Member Name</th>
+          <th>Entry Type</th>
+        </tr>
+      </thead>
+      <tbody id="logTable">
+        <tr><td colspan="3" style="text-align:center;opacity:0.5;">Loading...</td></tr>
+      </tbody>
+    </table>
+    <p class="total-row" id="totalRow"></p>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('mm_token');
+    if (!token) window.location.href = '/admin/index.html';
+    const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+    let currentLogs = [];
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('mm_token');
+      localStorage.removeItem('mm_user');
+      window.location.href = '/admin/index.html';
+    });
+
+    // Default to today
+    const today = new Date().toISOString().substring(0, 10);
+    document.getElementById('dateFilter').value = today;
+
+    async function loadLogs() {
+      const date = document.getElementById('dateFilter').value;
+      const url = date ? `/api/attendance?date=${date}&limit=200` : '/api/attendance?limit=200';
+
+      try {
+        const res = await fetch(url, { headers });
+        if (res.status === 401) { window.location.href = '/admin/index.html'; return; }
+        currentLogs = await res.json();
+        renderLogs(currentLogs);
+      } catch (err) {
+        console.error('Failed to load logs:', err);
+      }
+    }
+
+    function renderLogs(logs) {
+      const tbody = document.getElementById('logTable');
+      const totalRow = document.getElementById('totalRow');
+
+      if (logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;opacity:0.5;">No entries for this date</td></tr>';
+        totalRow.textContent = '';
+        return;
+      }
+
+      tbody.innerHTML = logs.map((log) => {
+        const time = new Date(log.scannedAt).toLocaleTimeString('en-US', {
+          timeZone: 'Asia/Manila',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+        return `<tr>
+          <td>${time}</td>
+          <td>${log.memberName}</td>
+          <td style="text-transform:capitalize">${log.entryType}</td>
+        </tr>`;
+      }).join('');
+
+      totalRow.textContent = `Total entries: ${logs.length}`;
+    }
+
+    document.getElementById('dateFilter').addEventListener('change', loadLogs);
+
+    // --- CSV Export ---
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      if (currentLogs.length === 0) { alert('No data to export'); return; }
+
+      const rows = [['Time', 'Member Name', 'Entry Type']];
+      for (const log of currentLogs) {
+        const time = new Date(log.scannedAt).toLocaleString('en-US', { timeZone: 'Asia/Manila' });
+        rows.push([time, log.memberName, log.entryType]);
+      }
+
+      const csv = rows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `attendance-${document.getElementById('dateFilter').value || 'all'}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    loadLogs();
+  </script>
+</body>
+</html>
