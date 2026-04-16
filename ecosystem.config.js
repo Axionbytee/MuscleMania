@@ -4,6 +4,7 @@ module.exports = {
       name: 'musclemania-backend',
       script: './backend/server.js',
       watch: false,
+      env_file: './backend/.env',
       env: { NODE_ENV: 'production' }
     },
     {
