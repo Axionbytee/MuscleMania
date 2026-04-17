@@ -9,7 +9,7 @@ module.exports = {
     },
     {
       name: 'musclemania-scanner',
-      script: './pi-reader/scanner.py',
+      script: './reader/scanner.py',
       interpreter: 'python3',
       watch: false,
       restart_delay: 3000

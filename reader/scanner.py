@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
 MuscleMania — RFID Scanner for Raspberry Pi
-Hardware: RC522 on SPI1 (/dev/spidev1.0)
-  SDA  → Board Pin 12 (GPIO18) — SPI1 CE0 (hardware chip-select, kernel-managed)
-  SCK  → Board Pin 40 (GPIO21) — SPI1 SCLK
-  MOSI → Board Pin 38 (GPIO20) — SPI1 MOSI
-  MISO → Board Pin 35 (GPIO19) — SPI1 MISO
-  RST  → Board Pin 22 (GPIO25) — connect RC522 RST here; change PIN_RST if wired elsewhere
+Hardware: RC522 on SPI0 (/dev/spidev0.0)
+  SDA  → Board Pin 24 (GPIO8) — SPI0 CE0 (hardware chip-select, kernel-managed)
+  SCK  → Board Pin 23 (GPIO11) — SPI0 SCLK
+  MOSI → Board Pin 19 (GPIO10) — SPI0 MOSI
+  MISO → Board Pin 21 (GPIO9) — SPI0 MISO
+  RST  → Board Pin 22 (GPIO25) — RC522 RST
 """
 
 import os
@@ -28,16 +28,14 @@ if IS_PI:
         print("[ERROR] Install with: pip install mfrc522 RPi.GPIO")
         sys.exit(1)
     
-    # ── SPI1 Configuration ───────────────────────────────────────────────────────
-    # bus=1, device=0 → /dev/spidev1.0
-    # pin_ce=0  → use hardware SPI1 CE0 (Board Pin 12 / GPIO18) via spidev; no GPIO needed
-    # pin_rst   → RC522 RST line; adjust PIN_RST if wired to a different GPIO
-    # NOTE: If using Waveshare LCD or other overlays, GPIO 25 may be in use.
-    #       Common alternatives: GPIO 23 (Pin 16), GPIO 24 (Pin 18), GPIO 27 (Pin 13)
-    PIN_RST = 23  # Default to GPIO 23 to avoid conflicts with common LCD overlays
+    # ── SPI0 Configuration ───────────────────────────────────────────────────────
+    # bus=0, device=0 → /dev/spidev0.0
+    # pin_ce=0  → use hardware SPI0 CE0 via spidev
+    # pin_rst   → RC522 RST line (default GPIO 25)
+    PIN_RST = 25
     
     try:
-        reader = MFRC522(bus=1, device=0, pin_rst=PIN_RST)
+        reader = MFRC522(bus=0, device=0, pin_rst=PIN_RST)
         print("[INFO] MFRC522 initialized on SPI1")
     except ValueError as e:
         print(f"[ERROR] Failed to initialize MFRC522: {e}")

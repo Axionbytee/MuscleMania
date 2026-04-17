@@ -270,6 +270,10 @@
           <button type="button" id="scanCardBtn" onclick="startRfidCapture()">Scan Card</button>
           <span id="scanStatus"></span>
         </div>
+        <div class="form-group">
+          <label for="photoUrl">Photo URL</label>
+          <input type="text" id="photoUrl" placeholder="Enter photo URL" />
+        </div>
         <div class="modal-actions">
           <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
           <button type="submit" class="btn-save">Save</button>
@@ -391,6 +395,7 @@
       document.getElementById('expirationDate').value = m.expirationDate ? m.expirationDate.substring(0, 10) : '';
       document.getElementById('membershipType').value = m.membershipType || 'monthly';
       document.getElementById('rfidUid').value = m.rfidUid || '';
+      document.getElementById('photoUrl').value = m.photoUrl || '';
       modal.classList.add('show');
     }
 
@@ -404,7 +409,8 @@
         issueDate: document.getElementById('issueDate').value,
         expirationDate: document.getElementById('expirationDate').value,
         membershipType: document.getElementById('membershipType').value,
-        rfidUid: document.getElementById('rfidUid').value
+        rfidUid: document.getElementById('rfidUid').value,
+        photoUrl: document.getElementById('photoUrl').value
       };
 
       try {

@@ -2,7 +2,7 @@
 package-lock.json
 node_modules/
 backend/uploads/
-pi-reader/offline_queue.json
+reader/offline_queue.json
 .github/
 .alpackages/
 CONTEXT.md

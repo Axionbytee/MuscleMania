@@ -27,17 +27,17 @@ html, body {
   background-image: url('../assets/images/bgImage.png');
   background-size: cover;
   background-position: center;
-  filter: blur(25px) brightness(0.5); 
+  filter: blur(15px) brightness(0.5); 
   transform: scale(1.1);
   z-index: 1;
   transition: filter 0.6s ease;
 }
 
 .viewport-container.status-expired .full-bg { 
-  filter: blur(25px) brightness(0.4) sepia(1) hue-rotate(-50deg) saturate(5); 
+  filter: blur(15px) brightness(0.4) sepia(1) hue-rotate(-50deg) saturate(5); 
 }
 .viewport-container.status-warning .full-bg { 
-  filter: blur(25px) brightness(0.5) sepia(0.8) hue-rotate(10deg) saturate(3); 
+  filter: blur(15px) brightness(0.5) sepia(0.8) hue-rotate(10deg) saturate(3); 
 }
 
 .membership-card {
@@ -177,7 +177,7 @@ html, body {
   z-index: 100;
   padding: 15px 25px;
   background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(6px);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;

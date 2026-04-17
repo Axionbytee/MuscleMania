@@ -11,9 +11,11 @@
 
   <!-- IDLE SCREEN — shown when no card is scanned -->
   <div id="idle-screen" class="idle-screen">
+    <div class="idle-bg"></div>
     <div class="idle-content">
-      <img src="src/assets/images/bgImage.png" alt="MuscleMania Logo" class="idle-logo pulse" />
-      <p class="idle-text">Tap your card</p>
+      <img class="idle-logo" src="src/assets/images/muscle-mania-logo.png" alt="MuscleMania Logo" />
+      <p class="idle-text">Welcome to Muscle Mania</p>
+      <p class="idle-subtext">Tap your card to continue</p>
     </div>
   </div>
 
@@ -48,7 +50,12 @@
       </div>
 
       <div class="card-right">
-        <img id="memberPhoto" class="client-photo" src="src/assets/images/Naig.png" alt="Member Photo" />
+        <div class="collage">
+          <div class="collage-panel p1"><img src="src/assets/images/musclemaniabg.png" alt="" /></div>
+          <div class="collage-panel p2"><img src="src/assets/images/bgImage.png" alt="" /></div>
+          <div class="collage-panel p3"><img src="src/assets/images/muscle-mania-logo.png" alt="" /></div>
+          <div class="collage-panel p4"><img id="memberPhoto" src="src/assets/images/Naig.png" alt="Member Photo" /></div>
+        </div>
       </div>
     </div>
   </div>

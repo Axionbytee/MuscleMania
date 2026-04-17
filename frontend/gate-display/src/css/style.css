@@ -20,45 +20,50 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #001a1a 0%, #003333 50%, #001a1a 100%);
+  overflow: hidden;
   z-index: 50;
 }
 
+.idle-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('../assets/images/musclemaniabg.png');
+  background-size: cover;
+  background-position: center;
+  filter: blur(9px) brightness(0.5);
+  transform: scale(1.1);
+  z-index: 0;
+}
+
 .idle-content {
+  position: relative;
+  z-index: 1;
   text-align: center;
 }
 
 .idle-logo {
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  object-fit: cover;
+  width: 280px;
+  object-fit: contain;
   margin-bottom: 40px;
-  box-shadow: 0 0 80px rgba(0, 128, 128, 0.4);
 }
 
 .idle-text {
   font-size: 36px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.9);
   text-transform: uppercase;
   letter-spacing: 8px;
+  margin: 0 0 12px;
+}
+
+.idle-subtext {
+  font-size: 22px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 4px;
+  text-transform: uppercase;
   animation: fadeInOut 2.5s ease-in-out infinite;
-}
-
-.pulse {
-  animation: pulseGlow 2.5s ease-in-out infinite;
-}
-
-@keyframes pulseGlow {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 80px rgba(0, 128, 128, 0.4);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 120px rgba(0, 128, 128, 0.7);
-  }
+  margin: 0;
 }
 
 @keyframes fadeInOut {
@@ -86,17 +91,17 @@ html, body {
   background-image: url('../assets/images/bgImage.png');
   background-size: cover;
   background-position: center;
-  filter: blur(25px) brightness(0.5); 
+  filter: blur(15px) brightness(0.5); 
   transform: scale(1.1);
   z-index: 1;
   transition: filter 0.6s ease;
 }
 
 .viewport-container.status-expired .full-bg { 
-  filter: blur(25px) brightness(0.4) sepia(1) hue-rotate(-50deg) saturate(5); 
+  filter: blur(15px) brightness(0.4) sepia(1) hue-rotate(-50deg) saturate(5); 
 }
 .viewport-container.status-warning .full-bg { 
-  filter: blur(25px) brightness(0.5) sepia(0.8) hue-rotate(10deg) saturate(3); 
+  filter: blur(15px) brightness(0.5) sepia(0.8) hue-rotate(10deg) saturate(3); 
 }
 
 .membership-card {
@@ -124,20 +129,79 @@ html, body {
 
 
 .card-right {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  overflow: hidden;
   border-left: 1px solid rgba(255,255,255,0.1);
+  position: relative;
 }
 
-.client-photo {
-  width: 250px;
-  height: 250px;
-  border-radius: 50%;
-  border: 5px solid rgba(255,255,255,0.2);
+/* 4-panel diagonal collage */
+.collage {
+  width: 300px;
+  height: 600px;
+  position: relative;
+  overflow: hidden;
+}
+
+.collage-panel {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.collage-panel img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  background-color: rgba(0,0,0,0.3);
+  display: block;
+}
+
+/* Top-left panel */
+.collage-panel.p1 {
+  clip-path: polygon(0 0, 55% 0, 45% 50%, 0 50%);
+}
+
+/* Top-right panel */
+.collage-panel.p2 {
+  clip-path: polygon(55% 0, 100% 0, 100% 50%, 45% 50%);
+}
+
+/* Bottom-left panel */
+.collage-panel.p3 {
+  clip-path: polygon(0 50%, 55% 50%, 45% 100%, 0 100%);
+}
+
+/* Bottom-right panel — member photo */
+.collage-panel.p4 {
+  clip-path: polygon(55% 50%, 100% 50%, 100% 100%, 45% 100%);
+}
+
+/* Diagonal divider lines */
+.collage::before,
+.collage::after {
+  content: '';
+  position: absolute;
+  background: rgba(255,255,255,0.15);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Horizontal divider */
+.collage::before {
+  top: calc(50% - 1px);
+  left: 0;
+  width: 100%;
+  height: 2px;
+}
+
+/* Diagonal divider */
+.collage::after {
+  top: 0;
+  left: calc(50% - 1px);
+  width: 2px;
+  height: 100%;
+  transform-origin: center;
+  transform: rotate(-5deg);
 }
 
 #expiry-timer {
@@ -236,7 +300,7 @@ html, body {
   z-index: 100;
   padding: 15px 25px;
   background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(6px);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;

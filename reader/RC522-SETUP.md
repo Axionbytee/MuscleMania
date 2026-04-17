@@ -58,7 +58,7 @@ pip install mfrc522 RPi.GPIO requests
 
 Run the diagnostic tool:
 ```bash
-cd ~/MuscleMania/pi-reader
+cd ~/MuscleMania/reader
 python3 diagnose_rc522.py
 ```
 
@@ -93,7 +93,7 @@ All checks passed! RC522 should work.
 ## Running the Scanner
 
 ```bash
-cd ~/MuscleMania/pi-reader
+cd ~/MuscleMania/reader
 python3 scanner.py
 ```
 
@@ -150,7 +150,7 @@ Common GPIO alternatives for RST:
 - GPIO 27 (Pin 13)
 - GPIO 17 (Pin 11)
 
-**If you wired RC522 RST to a different physical pin**, edit `pi-reader/scanner.py`:
+**If you wired RC522 RST to a different physical pin**, edit `reader/scanner.py`:
 ```python
 PIN_RST = 23  # Change to your GPIO number
 ```
