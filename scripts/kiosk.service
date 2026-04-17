@@ -1,0 +1,47 @@
+[Unit]
+Description=MuscleMania Chromium Kiosk Display
+After=musclemania.service
+Wants=musclemania.service
+
+[Service]
+Type=simple
+User=charles
+Group=charles
+WorkingDirectory=/home/charles/MuscleMania
+
+# Set up the environment for Chromium and X11
+Environment="DISPLAY=:0"
+Environment="XAUTHORITY=/home/charles/.Xauthority"
+Environment="PATH=/home/charles/.nvm/versions/node/v24.15.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="HOME=/home/charles"
+
+# Wait for backend to be ready before starting Chromium
+ExecStartPre=/bin/bash -c 'for i in {1..30}; do curl -s http://localhost:3000 && exit 0; sleep 1; done; exit 1'
+
+# Start Chromium in fullscreen kiosk mode
+ExecStart=/bin/bash -c 'exec /usr/bin/chromium-browser \
+  --kiosk \
+  --no-first-run \
+  --noerrdialogs \
+  --disable-translate \
+  --disable-background-networking \
+  --disable-default-apps \
+  --disable-extensions \
+  --disable-sync \
+  --disable-plugins \
+  --disable-plugin-power-saver \
+  --disable-preconnect \
+  --disable-background-timer-throttling \
+  --disable-device-orientation-permission-prompt \
+  http://localhost:3000'
+
+Restart=always
+RestartSec=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=musclemania-kiosk
+
+[Install]
+WantedBy=multi-user.target

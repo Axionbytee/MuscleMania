@@ -37,6 +37,30 @@ sudo reboot
 
 ---
 
+## Complete Setup (All Services - Recommended)
+
+To install both the backend and Chromium kiosk services in one go:
+
+```bash
+cd ~/MuscleMania
+chmod +x scripts/install-all-services.sh
+./scripts/install-all-services.sh
+```
+
+This script:
+- ✅ Installs `musclemania.service` (backend + PM2 + Python scanner)
+- ✅ Installs `kiosk.service` (Chromium display)
+- ✅ Enables both on boot
+- ✅ Starts both services
+- ✅ Verifies both are running
+
+After the script completes:
+- Backend will be running on `http://localhost:3000`
+- Chromium will launch automatically once backend is ready
+- Both services will auto-start on reboot
+
+---
+
 ## ⚠️ IMPORTANT - Service Not Found After Reboot?
 
 If you see `Unit musclemania.service could not be found`, run this to fix it:
