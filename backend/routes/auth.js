@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import Admin from '../models/Admin.js';
+import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = Router();
 
@@ -40,6 +41,10 @@ router.post('/login', async (req, res) => {
     console.error('[AUTH] Login error:', err.message);
     return res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+router.get('/verify', authMiddleware, (req, res) => {
+  res.json({ valid: true, user: req.user });
 });
 
 export default router;
