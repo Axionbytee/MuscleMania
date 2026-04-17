@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Exec=/home/pi/MuscleMania/scripts/start-kiosk.sh
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=MuscleMania Kiosk
+Comment=Auto-start MuscleMania backend and Chromium kiosk display
+Categories=Utility;
