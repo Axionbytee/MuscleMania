@@ -1,6 +1,29 @@
 # MuscleMania Systemd Autostart Setup Guide
 
-**You're right** — systemd is more reliable than PM2's startup hook. Here's the fixed setup:
+## ⚠️ ERROR - Service Failed: `/usr/local/bin/pm2 could not be executed`?
+
+If you see this error after starting the service, PM2 isn't in `/usr/local/bin`. It's installed in your user's npm directory. Fix it:
+
+```bash
+cd ~/MuscleMania
+chmod +x scripts/fix-pm2-path.sh
+./scripts/fix-pm2-path.sh
+```
+
+This script:
+- ✅ Finds the correct PM2 path (usually in nvm)
+- ✅ Updates the systemd service file
+- ✅ Restarts the service
+- ✅ Verifies it's running
+
+Then test:
+```bash
+curl http://localhost:3000
+pm2 list
+sudo reboot
+```
+
+---
 
 ## ⚠️ IMPORTANT - Service Not Found After Reboot?
 
@@ -21,18 +44,17 @@ This script:
 
 ---
 
-## Quick Setup (Manual - if fix-systemd.sh doesn't work)
+## Quick Setup (Manual - if scripts don't work)
 
 If you need to do it manually on your Pi:
 
 ```bash
-# 1. Remove the broken PM2 hook
-pm2 unstartup systemd
-sudo systemctl disable pm2-charles
-sudo rm /etc/systemd/system/pm2-charles.service
-sudo systemctl daemon-reload
+# 1. Find the correct PM2 path
+which pm2
+# Output should be something like: /home/charles/.nvm/versions/node/v24.15.0/bin/pm2
+# Note this path, use it below instead of /usr/local/bin/pm2
 
-# 2. Create the proper service file
+# 2. Create the service file with CORRECT PM2 path
 sudo tee /etc/systemd/system/musclemania.service > /dev/null << 'EOF'
 [Unit]
 Description=MuscleMania Backend and Scanner (PM2)
@@ -42,9 +64,9 @@ After=network.target
 Type=forking
 User=charles
 WorkingDirectory=/home/charles/MuscleMania
-ExecStart=/usr/local/bin/pm2 start ecosystem.config.js
-ExecReload=/usr/local/bin/pm2 reload ecosystem.config.js
-ExecStop=/usr/local/bin/pm2 stop ecosystem.config.js
+ExecStart=/home/charles/.nvm/versions/node/v24.15.0/bin/pm2 start ecosystem.config.js
+ExecReload=/home/charles/.nvm/versions/node/v24.15.0/bin/pm2 reload ecosystem.config.js
+ExecStop=/home/charles/.nvm/versions/node/v24.15.0/bin/pm2 stop ecosystem.config.js
 Restart=on-failure
 RestartSec=5s
 KillMode=process
@@ -65,6 +87,8 @@ pm2 list
 # 5. Test
 sudo reboot
 ```
+
+**IMPORTANT:** Replace `/home/charles/.nvm/versions/node/v24.15.0/bin/pm2` with the actual output from `which pm2`
 
 ---
 
@@ -91,7 +115,7 @@ Boot → systemd starts musclemania.service
 
 ### `/etc/systemd/system/musclemania.service`
 - Direct systemd service (not relying on PM2's hook)
-- Starts PM2 on boot
+- Starts PM2 on boot with correct path
 - Auto-restarts if service crashes
 - Logs to journalctl (system logs)
 
@@ -177,10 +201,23 @@ pm2 start ecosystem.config.js
 
 ---
 
+## Troubleshooting Checklist
+
+- [ ] PM2 path is correct (use `which pm2`)
+- [ ] Service file has correct username (not hardcoded `pi`)
+- [ ] Service file has correct working directory
+- [ ] Service is enabled: `sudo systemctl is-enabled musclemania.service`
+- [ ] Service starts: `sudo systemctl start musclemania.service`
+- [ ] Port 3000 responds: `curl http://localhost:3000`
+- [ ] PM2 apps running: `pm2 list`
+- [ ] No errors in logs: `sudo journalctl -u musclemania.service -n 20`
+
+---
+
 ## Important Notes
 
-- **Username auto-detected in scripts**: Scripts replace `pi` with your actual username
-- **DISPLAY auto-added**: Scripts add `export DISPLAY=:0` to start-kiosk.sh
+- **Find correct PM2 path**: `which pm2` — use this in the service file
+- **Username matters**: Service must run as your user (e.g., `charles`), not `pi` or `root`
 - **PM2 still used**: Systemd just starts PM2, which manages the apps
-- **No need for PM2 hook**: We bypass PM2's unreliable startup hook entirely
-- **If service still missing**: Run `./scripts/fix-systemd.sh` to install manually
+- **No PM2 hook**: We bypass PM2's unreliable startup hook entirely
+- **Logs available**: Check `sudo journalctl -u musclemania.service -f` for real-time logs
