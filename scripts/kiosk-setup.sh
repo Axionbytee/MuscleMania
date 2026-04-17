@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #############################################################################
-# MuscleMania Kiosk Setup Script
-# Configures PM2 autostart and Chromium desktop autostart
+# MuscleMania Kiosk Setup Script (Systemd Version)
+# Configures systemd service for PM2 and Chromium desktop autostart
 # Run on Raspberry Pi after setup.sh completes
 #############################################################################
 
@@ -31,8 +31,11 @@ log_error() {
 }
 
 PROJECT_ROOT="$HOME/MuscleMania"
+CURRENT_USER="$USER"
 
 log_info "MuscleMania Kiosk Setup Starting..."
+log_info "Current user: $CURRENT_USER"
+log_info "Project root: $PROJECT_ROOT"
 
 #############################################################################
 # 1. Verify PM2 is installed
@@ -47,102 +50,200 @@ fi
 log_success "PM2 $(pm2 -v) is installed"
 
 #############################################################################
-# 2. Start apps with PM2
+# 2. Verify ecosystem.config.js exists
 #############################################################################
-log_info "Step 2: Starting applications with PM2..."
+log_info "Step 2: Verifying ecosystem configuration..."
+
+if [ ! -f "$PROJECT_ROOT/ecosystem.config.js" ]; then
+    log_error "ecosystem.config.js not found at $PROJECT_ROOT"
+    exit 1
+fi
+
+log_success "ecosystem.config.js found"
+
+#############################################################################
+# 3. Kill existing PM2 processes
+#############################################################################
+log_info "Step 3: Stopping existing PM2 processes..."
+
+pm2 delete all 2>/dev/null || true
+sleep 2
+
+log_success "PM2 processes cleared"
+
+#############################################################################
+# 4. Test ecosystem.config.js starts correctly
+#############################################################################
+log_info "Step 4: Testing ecosystem configuration..."
 
 cd "$PROJECT_ROOT"
-
-# Stop any existing PM2 apps
-pm2 delete all 2>/dev/null || true
-
-# Start from ecosystem.config.js
 pm2 start ecosystem.config.js
 
-log_success "PM2 apps started"
+sleep 3
+
+if pm2 list | grep -q "musclemania-backend"; then
+    log_success "Backend started successfully"
+else
+    log_error "Backend failed to start. Check:"
+    pm2 logs musclemania-backend --lines 20
+    exit 1
+fi
+
+log_success "Applications running correctly"
 pm2 list
 
 #############################################################################
-# 3. Save PM2 configuration
+# 5. Save PM2 state
 #############################################################################
-log_info "Step 3: Saving PM2 configuration..."
+log_info "Step 5: Saving PM2 state..."
 
 pm2 save
 
-log_success "PM2 configuration saved"
+log_success "PM2 state saved"
 
 #############################################################################
-# 4. Install PM2 startup hook
+# 6. Install systemd service (MOST IMPORTANT)
 #############################################################################
-log_info "Step 4: Installing PM2 startup hook for systemd..."
+log_info "Step 6: Installing systemd service for autoboot..."
 
-pm2 startup systemd -u $USER --hp /home/$USER
+SERVICE_FILE="/etc/systemd/system/musclemania.service"
+SOURCE_SERVICE="$PROJECT_ROOT/scripts/musclemania.service"
 
-log_success "PM2 startup hook installed"
+# Check if source service file exists
+if [ ! -f "$SOURCE_SERVICE" ]; then
+    log_error "Source service file not found: $SOURCE_SERVICE"
+    exit 1
+fi
+
+# Copy and update service file with correct user
+TMP_SERVICE="/tmp/musclemania.service"
+cp "$SOURCE_SERVICE" "$TMP_SERVICE"
+
+# Replace 'pi' with actual username
+sed -i "s|User=pi|User=$CURRENT_USER|g" "$TMP_SERVICE"
+sed -i "s|/home/pi/|/home/$CURRENT_USER/|g" "$TMP_SERVICE"
+
+# Install service file
+sudo cp "$TMP_SERVICE" "$SERVICE_FILE"
+sudo chmod 644 "$SERVICE_FILE"
+
+log_success "Systemd service installed at: $SERVICE_FILE"
 
 #############################################################################
-# 5. Configure Chromium autostart
+# 7. Enable and start the service
 #############################################################################
-log_info "Step 5: Configuring Chromium autostart..."
+log_info "Step 7: Enabling systemd service..."
+
+sudo systemctl daemon-reload
+sudo systemctl enable musclemania.service
+sudo systemctl start musclemania.service
+
+sleep 2
+
+if sudo systemctl is-active --quiet musclemania.service; then
+    log_success "Systemd service is active and running"
+else
+    log_error "Systemd service failed to start"
+    log_warning "Check with: sudo journalctl -u musclemania.service -n 20"
+    exit 1
+fi
+
+log_success "Service will auto-start on reboot"
+
+#############################################################################
+# 8. Configure Chromium autostart
+#############################################################################
+log_info "Step 8: Configuring Chromium autostart..."
 
 AUTOSTART_DIR="$HOME/.config/autostart"
 DESKTOP_FILE="$AUTOSTART_DIR/musclemania-kiosk.desktop"
 
-# Create autostart directory if it doesn't exist
 mkdir -p "$AUTOSTART_DIR"
 
-# Copy the desktop file from project
-cp "$PROJECT_ROOT/scripts/musclemania-kiosk.desktop" "$DESKTOP_FILE"
+# Create desktop file
+cat > "$DESKTOP_FILE" << EOF
+[Desktop Entry]
+Type=Application
+Exec=/home/$CURRENT_USER/MuscleMania/scripts/start-kiosk.sh
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=MuscleMania Kiosk
+Comment=Auto-start MuscleMania Chromium kiosk display
+Categories=Utility;
+EOF
 
-# Replace placeholder username with actual user
-sed -i "s|/home/pi/|/home/$USER/|g" "$DESKTOP_FILE"
-
-log_success "Desktop autostart file created at: $DESKTOP_FILE"
+log_success "Desktop autostart file created: $DESKTOP_FILE"
 
 #############################################################################
-# 6. Make scripts executable
+# 9. Update start-kiosk.sh with DISPLAY variable
 #############################################################################
-log_info "Step 6: Making scripts executable..."
+log_info "Step 9: Updating kiosk startup script..."
+
+KIOSK_SCRIPT="$PROJECT_ROOT/scripts/start-kiosk.sh"
+
+if [ -f "$KIOSK_SCRIPT" ]; then
+    # Check if DISPLAY is already set
+    if ! grep -q "export DISPLAY" "$KIOSK_SCRIPT"; then
+        # Add DISPLAY export after shebang
+        sed -i '2a export DISPLAY=:0' "$KIOSK_SCRIPT"
+        log_success "Added DISPLAY=:0 to kiosk script"
+    else
+        log_success "DISPLAY already configured in kiosk script"
+    fi
+    
+    chmod +x "$KIOSK_SCRIPT"
+else
+    log_warning "Kiosk script not found: $KIOSK_SCRIPT"
+fi
+
+#############################################################################
+# 10. Disable screen blanking permanently
+#############################################################################
+log_info "Step 10: Disabling screen blanking..."
+
+if [ -f "/etc/lightdm/lightdm.conf" ]; then
+    sudo sed -i '/^xserver-command=/d' /etc/lightdm/lightdm.conf
+    echo "xserver-command=X -s 0 -dpms" | sudo tee -a /etc/lightdm/lightdm.conf > /dev/null
+    log_success "Screen blanking disabled in lightdm.conf"
+fi
+
+#############################################################################
+# 11. Make scripts executable
+#############################################################################
+log_info "Step 11: Making scripts executable..."
 
 chmod +x "$PROJECT_ROOT/scripts/start-kiosk.sh"
 chmod +x "$PROJECT_ROOT/scripts/setup.sh"
+chmod +x "$PROJECT_ROOT/scripts/diagnose.sh"
 
 log_success "Scripts made executable"
 
 #############################################################################
-# 7. Disable screen blanking
-#############################################################################
-log_info "Step 7: Disabling screen blanking permanently..."
-
-# Add screen blanking disable to lightdm config
-if [ -f "/etc/lightdm/lightdm.conf" ]; then
-    if ! grep -q "xserver-command=X -s 0 -dpms" /etc/lightdm/lightdm.conf; then
-        sudo sed -i '/^xserver-command=/d' /etc/lightdm/lightdm.conf
-        echo "xserver-command=X -s 0 -dpms" | sudo tee -a /etc/lightdm/lightdm.conf > /dev/null
-        log_success "Screen blanking disabled in lightdm.conf"
-    fi
-fi
-
-#############################################################################
-# 8. Summary and Next Steps
+# 12. Summary and Next Steps
 #############################################################################
 log_success "Kiosk autostart setup complete!"
 echo ""
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}MuscleMania Kiosk Setup Summary${NC}"
+echo -e "${GREEN}MuscleMania Systemd Setup Summary${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
-echo -e "${GREEN}✓ PM2 apps started${NC}"
+echo -e "${GREEN}✓ PM2 applications running${NC}"
 pm2 list
 echo ""
-echo -e "${GREEN}✓ PM2 startup hook installed${NC}"
-echo -e "  Will auto-start on reboot"
+echo -e "${GREEN}✓ Systemd service installed and enabled${NC}"
+sudo systemctl status musclemania.service --no-pager
 echo ""
 echo -e "${GREEN}✓ Chromium autostart configured${NC}"
 echo -e "  Desktop file: $DESKTOP_FILE"
-echo -e "  User: $USER"
+echo -e "  User: $CURRENT_USER"
 echo ""
-echo -e "${GREEN}✓ Screen blanking disabled${NC}"
+echo -e "${YELLOW}IMPORTANT - BOOT AUTOSTART FLOW:${NC}"
+echo -e "  1. System boots → systemd starts musclemania service"
+echo -e "  2. Service runs: pm2 start ecosystem.config.js"
+echo -e "  3. Backend + Scanner come online"
+echo -e "  4. User logs in → desktop loads"
+echo -e "  5. Desktop autostart launches: start-kiosk.sh"
+echo -e "  6. Chromium opens fullscreen on http://localhost:3000/admin"
 echo ""
 echo -e "${YELLOW}NEXT STEPS:${NC}"
 echo -e "  1. Reboot to test full autostart:"
@@ -150,12 +251,17 @@ echo -e "     ${BLUE}sudo reboot${NC}"
 echo ""
 echo -e "  2. After reboot, verify with:"
 echo -e "     ${BLUE}pm2 list${NC}"
-echo -e "     ${BLUE}pm2 logs${NC}"
+echo -e "     ${BLUE}sudo systemctl status musclemania.service${NC}"
 echo ""
-echo -e "  3. Manual controls:"
-echo -e "     Stop kiosk: ${BLUE}pm2 stop all${NC}"
-echo -e "     Start kiosk: ${BLUE}pm2 start all${NC}"
-echo -e "     View logs: ${BLUE}pm2 logs musclemania-backend${NC}"
-echo -e "     View logs: ${BLUE}pm2 logs musclemania-scanner${NC}"
+echo -e "${YELLOW}Manual Control Commands:${NC}"
+echo -e "  Stop service: ${BLUE}sudo systemctl stop musclemania.service${NC}"
+echo -e "  Start service: ${BLUE}sudo systemctl start musclemania.service${NC}"
+echo -e "  Restart: ${BLUE}sudo systemctl restart musclemania.service${NC}"
+echo -e "  View logs: ${BLUE}sudo journalctl -u musclemania.service -f${NC}"
+echo -e "  PM2 logs: ${BLUE}pm2 logs${NC}"
+echo ""
+echo -e "${YELLOW}If Chromium still doesn't spawn:${NC}"
+echo -e "  Run diagnostic: ${BLUE}./scripts/diagnose.sh${NC}"
+echo -e "  Manual test: ${BLUE}export DISPLAY=:0 && bash $KIOSK_SCRIPT${NC}"
 echo ""
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"

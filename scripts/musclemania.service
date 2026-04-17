@@ -1,0 +1,23 @@
+[Unit]
+Description=MuscleMania Backend and Scanner (PM2)
+Documentation=https://pm2.keymetrics.io
+After=network.target
+
+[Service]
+Type=forking
+User=pi
+WorkingDirectory=/home/pi/MuscleMania
+ExecStart=/usr/local/bin/pm2 start ecosystem.config.js
+ExecReload=/usr/local/bin/pm2 reload ecosystem.config.js
+ExecStop=/usr/local/bin/pm2 stop ecosystem.config.js
+Restart=on-failure
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=musclemania
+
+# Keep PM2 alive
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
