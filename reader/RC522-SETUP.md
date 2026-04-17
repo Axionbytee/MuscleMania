@@ -27,7 +27,7 @@ VCC      → Pin 2/4/17/40     (3.3V)
 ### 1. Enable SPI1 overlay
 
 ```bash
-sudo nano /boot/config.txt
+sudo nano /boot/firmware/config.txt
 ```
 
 Add this line (if not already present):
@@ -81,7 +81,7 @@ All checks passed! RC522 should work.
 
 ### 4. If diagnostic fails
 
-- **SPI1 not enabled**: Add `dtoverlay=spi1-3cs` to `/boot/config.txt`, reboot
+- **SPI1 not enabled**: Add `dtoverlay=spi1-3cs` to `/boot/firmware/config.txt`, reboot
 - **GPIO 25 unavailable**: Your RC522 RST is wired to a different pin. Find which GPIO, then edit `pin-reader/scanner.py` line ~30:
   ```python
   PIN_RST = <your_gpio_number>  # Change 25 to your pin's GPIO number
@@ -135,7 +135,7 @@ pm2 logs musclemania-scanner
 | Problem | Solution |
 |---------|----------|
 | `GPIO: The channel sent is invalid` | RC522 RST wired to wrong pin. Run `diagnose_rc522.py` |
-| `No such file or directory: '/dev/spidev1.0'` | SPI1 not enabled. Add `dtoverlay=spi1-3cs` to `/boot/config.txt`, reboot |
+| `No such file or directory: '/dev/spidev1.0'` | SPI1 not enabled. Add `dtoverlay=spi1-3cs` to `/boot/firmware/config.txt`, reboot |
 | No cards detected when scanning | Check wiring, especially MISO/MOSI. Verify RC522 is powered (check red LED) |
 | Backend gets `UNKNOWN` status | Card UID not registered. Go to admin dashboard and add member |
 
@@ -155,9 +155,9 @@ Common GPIO alternatives for RST:
 PIN_RST = 23  # Change to your GPIO number
 ```
 
-To find which pins are safe on your system, check `/boot/config.txt`:
+To find which pins are safe on your system, check `/boot/firmware/config.txt`:
 ```bash
-cat /boot/config.txt | grep dtoverlay
+cat /boot/firmware/config.txt | grep dtoverlay
 ```
 
 Then map the used GPIO numbers and pick a free one from the alternatives above.

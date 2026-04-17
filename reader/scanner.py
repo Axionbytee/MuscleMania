@@ -43,7 +43,7 @@ if IS_PI:
         print("[ERROR] Possible causes:")
         print(f"  1. RC522 RST is wired to a different GPIO pin (update PIN_RST = <pin_number>)")
         print(f"  2. GPIO {PIN_RST} is already in use by another process")
-        print(f"  3. /boot/config.txt missing: dtoverlay=spi1-3cs")
+        print(f"  3. /boot/firmware/config.txt missing: dtoverlay=spi1-3cs")
         print("[ERROR] Run 'python3 diagnose_rc522.py' for detailed diagnostics")
         sys.exit(1)
     except Exception as e:

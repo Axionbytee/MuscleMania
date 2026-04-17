@@ -115,14 +115,14 @@ fi
 if [ -f "/sys/firmware/devicetree/base/model" ]; then
     log_info "Step 6: Configuring Raspberry Pi settings..."
     
-    # 6a. Enable SPI0 in /boot/config.txt
-    log_info "Checking SPI0 configuration in /boot/config.txt..."
-    if ! grep -q "dtoverlay=spi0-3cs" /boot/config.txt; then
+    # 6a. Enable SPI0 in /boot/firmware/config.txt
+    log_info "Checking SPI0 configuration in /boot/firmware/config.txt..."
+    if ! grep -q "dtoverlay=spi0-3cs" /boot/firmware/config.txt; then
         log_warning "SPI0 overlay not found, adding..."
-        echo "" | sudo tee -a /boot/config.txt > /dev/null
-        echo "# MuscleMania RFID Reader - SPI0 Overlay" | sudo tee -a /boot/config.txt > /dev/null
-        echo "dtoverlay=spi0-3cs" | sudo tee -a /boot/config.txt > /dev/null
-        log_success "SPI0 overlay added to /boot/config.txt"
+        echo "" | sudo tee -a /boot/firmware/config.txt > /dev/null
+        echo "# MuscleMania RFID Reader - SPI0 Overlay" | sudo tee -a /boot/firmware/config.txt > /dev/null
+        echo "dtoverlay=spi0-3cs" | sudo tee -a /boot/firmware/config.txt > /dev/null
+        log_success "SPI0 overlay added to /boot/firmware/config.txt"
         log_warning "⚠️  REBOOT REQUIRED: Please run 'sudo reboot' to enable SPI0"
     else
         log_success "SPI0 overlay already configured"
@@ -166,8 +166,8 @@ EOF
     
     # 6e. Enable I2C and GPIO if needed
     log_info "Checking I2C and GPIO settings..."
-    if ! grep -q "dtparam=i2c_arm=on" /boot/config.txt; then
-        echo "dtparam=i2c_arm=on" | sudo tee -a /boot/config.txt > /dev/null
+    if ! grep -q "dtparam=i2c_arm=on" /boot/firmware/config.txt; then
+        echo "dtparam=i2c_arm=on" | sudo tee -a /boot/firmware/config.txt > /dev/null
         log_success "I2C enabled"
     fi
     
