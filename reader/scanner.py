@@ -30,25 +30,51 @@ if IS_PI:
     
     # ── SPI0 Configuration ───────────────────────────────────────────────────────
     # bus=0, device=0 → /dev/spidev0.0
-    # pin_ce=0  → use hardware SPI0 CE0 via spidev
     # pin_rst   → RC522 RST line (default GPIO 25)
     PIN_RST = 25
     
+    reader = None
+    
+    # Try Method 1: Standard initialization with pin_rst parameter
     try:
         reader = MFRC522(bus=0, device=0, pin_rst=PIN_RST)
-        print("[INFO] MFRC522 initialized on SPI1")
+        print(f"[INFO] MFRC522 initialized on SPI0 (bus=0, device=0, pin_rst={PIN_RST})")
+    except TypeError as e:
+        # Library may not support pin_rst parameter
+        print(f"[WARN] Method 1 failed (pin_rst param): {e}")
+        print(f"[INFO] Trying alternative initialization...")
+        
+        # Try Method 2: Initialize without explicit pin_rst (uses library defaults)
+        try:
+            reader = MFRC522(bus=0, device=0)
+            print(f"[INFO] MFRC522 initialized on SPI0 (default pins)")
+        except Exception as e2:
+            print(f"[WARN] Method 2 failed: {e2}")
+            
+            # Try Method 3: Just MFRC522() with no parameters
+            try:
+                reader = MFRC522()
+                print(f"[INFO] MFRC522 initialized with default parameters")
+            except Exception as e3:
+                print(f"[ERROR] All initialization methods failed!")
+                print(f"[ERROR] Last error: {e3}")
+                print(f"[ERROR] Run 'sudo python3 diagnose_rc522.py' for detailed diagnostics")
+                sys.exit(1)
     except ValueError as e:
         print(f"[ERROR] Failed to initialize MFRC522: {e}")
-        print(f"[ERROR] GPIO pin {PIN_RST} initialization failed")
-        print("[ERROR] Possible causes:")
-        print(f"  1. RC522 RST is wired to a different GPIO pin (update PIN_RST = <pin_number>)")
-        print(f"  2. GPIO {PIN_RST} is already in use by another process")
-        print(f"  3. /boot/firmware/config.txt missing: dtoverlay=spi1-3cs")
-        print("[ERROR] Run 'python3 diagnose_rc522.py' for detailed diagnostics")
+        print(f"[ERROR] Possible causes:")
+        print(f"  1. GPIO {PIN_RST} is in use by another process")
+        print(f"  2. RC522 RST is wired to a different pin (update PIN_RST = <pin_number>)")
+        print(f"[INFO] Try changing PIN_RST to 24, 23, or 27")
+        print(f"[ERROR] Run 'sudo python3 diagnose_rc522.py' for full diagnostics")
         sys.exit(1)
     except Exception as e:
-        print(f"[ERROR] Unexpected MFRC522 error: {e}")
-        print("[ERROR] Run 'python3 diagnose_rc522.py' for detailed diagnostics")
+        print(f"[ERROR] Unexpected MFRC522 initialization error: {e}")
+        print(f"[ERROR] Run 'sudo python3 diagnose_rc522.py' for detailed diagnostics")
+        sys.exit(1)
+    
+    if reader is None:
+        print(f"[ERROR] MFRC522 reader initialization failed")
         sys.exit(1)
 else:
     print("[WARNING] Not running on Raspberry Pi — scanner will be simulated")
