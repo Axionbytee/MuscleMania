@@ -90,7 +90,7 @@ log_success "pip $(pip3 --version) already available"
 log_info "Step 4: Installing Python dependencies..."
 log_info "Installing: mfrc522, RPi.GPIO, requests"
 
-sudo pip3 install -q mfrc522 RPi.GPIO requests
+sudo pip3 install -q mfrc522 RPi.GPIO requests --break-system-packages
 log_success "Python dependencies installed"
 
 #############################################################################
