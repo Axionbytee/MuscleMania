@@ -1,6 +1,6 @@
 # MuscleMania Systemd Autostart Setup Guide
 
-## ⚠️ ERROR - Service Failed: `/usr/local/bin/pm2 could not be executed`?
+## ⚠️ ERROR #1 - Service Failed: `/usr/local/bin/pm2 could not be executed`
 
 If you see this error after starting the service, PM2 isn't in `/usr/local/bin`. It's installed in your user's npm directory. Fix it:
 
@@ -10,11 +10,23 @@ chmod +x scripts/fix-pm2-path.sh
 ./scripts/fix-pm2-path.sh
 ```
 
-This script:
-- ✅ Finds the correct PM2 path (usually in nvm)
-- ✅ Updates the systemd service file
-- ✅ Restarts the service
-- ✅ Verifies it's running
+---
+
+## ⚠️ ERROR #2 - Service Still Fails With Exit Code 127: `command not found`
+
+If the PM2 path is correct but the service still fails with exit code 127, the issue is **systemd runs as root and can't access nvm's PM2**. Fix:
+
+```bash
+cd ~/MuscleMania
+chmod +x scripts/fix-systemd-user.sh
+./scripts/fix-systemd-user.sh
+```
+
+This script updates the service to:
+- ✅ Run as the `charles` user (not root) — has access to nvm
+- ✅ Set `PATH` to include nvm's node_modules bin directory
+- ✅ Set `HOME` and `NVM_DIR` environment variables
+- ✅ Use the correct PM2 path with proper environment
 
 Then test:
 ```bash
