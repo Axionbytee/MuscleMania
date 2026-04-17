@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=MuscleMania Kiosk
+Comment=Starts MuscleMania backend and opens Chromium in fullscreen kiosk mode
+Exec=/home/pi/kiosk.sh
+X-GNOME-Autostart-enabled=true
+Hidden=false
+NoDisplay=false
