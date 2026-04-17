@@ -2,41 +2,80 @@
 
 **You're right** — systemd is more reliable than PM2's startup hook. Here's the fixed setup:
 
-## Quick Setup (Run These Steps)
+## ⚠️ IMPORTANT - Service Not Found After Reboot?
 
-### On your Raspberry Pi:
+If you see `Unit musclemania.service could not be found`, run this to fix it:
 
 ```bash
 cd ~/MuscleMania
-
-# 1. Stop existing PM2 processes
-pm2 delete all
-
-# 2. Run the updated kiosk setup (now uses systemd)
-chmod +x scripts/kiosk-setup.sh
-./scripts/kiosk-setup.sh
-
-# 3. Reboot to test
+chmod +x scripts/fix-systemd.sh
+./scripts/fix-systemd.sh
 sudo reboot
 ```
 
-That's it. The script now:
-- ✅ Installs systemd service file
-- ✅ Enables systemd autostart (NOT PM2's hook)
-- ✅ Configures desktop Chromium launch
-- ✅ Sets DISPLAY variable automatically
-- ✅ Disables screen blanking
+This script:
+- ✅ Removes the broken `pm2-charles` service (old hook)
+- ✅ Installs the proper `musclemania` systemd service
+- ✅ Enables autostart on boot
+- ✅ Tests that everything works
+
+---
+
+## Quick Setup (Manual - if fix-systemd.sh doesn't work)
+
+If you need to do it manually on your Pi:
+
+```bash
+# 1. Remove the broken PM2 hook
+pm2 unstartup systemd
+sudo systemctl disable pm2-charles
+sudo rm /etc/systemd/system/pm2-charles.service
+sudo systemctl daemon-reload
+
+# 2. Create the proper service file
+sudo tee /etc/systemd/system/musclemania.service > /dev/null << 'EOF'
+[Unit]
+Description=MuscleMania Backend and Scanner (PM2)
+After=network.target
+
+[Service]
+Type=forking
+User=charles
+WorkingDirectory=/home/charles/MuscleMania
+ExecStart=/usr/local/bin/pm2 start ecosystem.config.js
+ExecReload=/usr/local/bin/pm2 reload ecosystem.config.js
+ExecStop=/usr/local/bin/pm2 stop ecosystem.config.js
+Restart=on-failure
+RestartSec=5s
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# 3. Enable and start
+sudo systemctl daemon-reload
+sudo systemctl enable musclemania.service
+sudo systemctl start musclemania.service
+
+# 4. Verify
+sudo systemctl status musclemania.service
+pm2 list
+
+# 5. Test
+sudo reboot
+```
 
 ---
 
 ## What Changed
 
-### Old Way (Unreliable)
+### Old Way (Unreliable) ❌
 ```
 Boot → PM2 startup hook → (often fails) → Nothing starts
 ```
 
-### New Way (Reliable - Systemd)
+### New Way (Reliable) ✅
 ```
 Boot → systemd starts musclemania.service
       → Service runs: pm2 start ecosystem.config.js
@@ -51,16 +90,10 @@ Boot → systemd starts musclemania.service
 ## What Gets Installed
 
 ### `/etc/systemd/system/musclemania.service`
-- Systemd service that starts PM2 on boot
-- Uses your actual username (auto-detected)
-- Restarts automatically if service crashes
+- Direct systemd service (not relying on PM2's hook)
+- Starts PM2 on boot
+- Auto-restarts if service crashes
 - Logs to journalctl (system logs)
-
-### Files Created
-```
-~/MuscleMania/scripts/musclemania.service    ← Systemd service template
-~/.config/autostart/musclemania-kiosk.desktop ← Desktop launch entry
-```
 
 ---
 
@@ -146,7 +179,8 @@ pm2 start ecosystem.config.js
 
 ## Important Notes
 
-- **Username auto-detected**: Script replaces `pi` with your actual username
-- **DISPLAY auto-added**: Script adds `export DISPLAY=:0` to start-kiosk.sh
+- **Username auto-detected in scripts**: Scripts replace `pi` with your actual username
+- **DISPLAY auto-added**: Scripts add `export DISPLAY=:0` to start-kiosk.sh
 - **PM2 still used**: Systemd just starts PM2, which manages the apps
 - **No need for PM2 hook**: We bypass PM2's unreliable startup hook entirely
+- **If service still missing**: Run `./scripts/fix-systemd.sh` to install manually
