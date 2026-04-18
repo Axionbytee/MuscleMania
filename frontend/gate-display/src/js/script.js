@@ -7,6 +7,7 @@ const idleScreen = document.getElementById('idle-screen');
 const container = document.getElementById('container');
 const badge = document.getElementById('statusLabel');
 const timerDisplay = document.getElementById('expiry-timer');
+const expirationCountdownDisplay = document.getElementById('expirationCountdown');
 const issuedDateDisplay = document.getElementById('issuedDate');
 const expiryDateDisplay = document.getElementById('expiryDate');
 const memberNameDisplay = document.getElementById('memberName');
@@ -86,6 +87,11 @@ function renderCard(data) {
     memberNameDisplay.innerText = member.fullName || '— — —';
     issuedDateDisplay.innerText = formatDate(member.issueDate);
     expiryDateDisplay.innerText = formatDate(member.expirationDate);
+
+    // Display expiration countdown (days or weeks)
+    const remainingDays = member.remainingDays || 0;
+    const expirationText = formatExpirationCountdown(remainingDays);
+    expirationCountdownDisplay.innerText = expirationText;
 
     // Photo — use uploaded photo or fallback
     if (member.photoUrl) {
@@ -176,6 +182,26 @@ function formatDate(isoDate) {
     day: 'numeric',
     timeZone: 'Asia/Manila'
   }).toUpperCase();
+}
+
+/**
+ * Format remaining days as "X days" or "X weeks".
+ * @param {number} days — remaining days
+ * @returns {string} e.g. "Expiring in 5 days" or "Expiring in 2 weeks"
+ */
+function formatExpirationCountdown(days) {
+  if (days < 0) {
+    return 'Expired';
+  } else if (days === 0) {
+    return 'Expires today';
+  } else if (days === 1) {
+    return 'Expiring in 1 day';
+  } else if (days < 7) {
+    return `Expiring in ${days} days`;
+  } else {
+    const weeks = Math.round(days / 7);
+    return weeks === 1 ? 'Expiring in 1 week' : `Expiring in ${weeks} weeks`;
+  }
 }
 
 // Start in idle state
