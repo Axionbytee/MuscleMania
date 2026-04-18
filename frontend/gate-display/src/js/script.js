@@ -84,7 +84,7 @@ function renderCard(data) {
   container.className = `viewport-container ${config.bgClass}`;
 
   if (member) {
-    memberNameDisplay.innerText = member.fullName || '— — —';
+    memberNameDisplay.innerText = (member.fullName || '— — —').toUpperCase();
     issuedDateDisplay.innerText = formatDate(member.issueDate);
     expiryDateDisplay.innerText = formatDate(member.expirationDate);
 
@@ -97,7 +97,8 @@ function renderCard(data) {
     if (member.photoUrl) {
       memberPhotoDisplay.src = member.photoUrl;
     } else {
-      memberPhotoDisplay.src = 'src/assets/images/Naig.png';
+      const name = member.fullName || 'Member';
+      memberPhotoDisplay.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=008080&color=fff&size=256`;
     }
 
     // Start countdown if expiring soon
@@ -114,7 +115,7 @@ function renderCard(data) {
     expiryDateDisplay.innerText = '— — —';
     expirationCountdownDisplay.innerText = '— — —';
     timerDisplay.style.display = 'none';
-    memberPhotoDisplay.src = 'src/assets/images/Naig.png';
+    memberPhotoDisplay.src = 'https://ui-avatars.com/api/?name=X&background=e74c3c&color=fff&size=256';
   }
 }
 
