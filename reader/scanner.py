@@ -31,16 +31,14 @@ if IS_PI:
     # ── SPI0 Configuration ───────────────────────────────────────────────────────
     # bus=0, device=0 → /dev/spidev0.0
     # pin_rst   → RC522 RST line (default GPIO 25)
-    # speed_hz  → SPI clock speed (8MHz for faster communication)
     PIN_RST = 25
-    SPI_SPEED = 8000000  # 8 MHz — tuned for faster card reading
     
     reader = None
     
-    # Try Method 1: Standard initialization with pin_rst and speed_hz parameters
+    # Try Method 1: Standard initialization with pin_rst parameter
     try:
-        reader = MFRC522(bus=0, device=0, pin_rst=PIN_RST, speed_hz=SPI_SPEED)
-        print(f"[INFO] MFRC522 initialized on SPI0 (bus=0, device=0, pin_rst={PIN_RST}, speed={SPI_SPEED/1e6:.0f}MHz)")
+        reader = MFRC522(bus=0, device=0, pin_rst=PIN_RST)
+        print(f"[INFO] MFRC522 initialized on SPI0 (bus=0, device=0, pin_rst={PIN_RST})")
     except TypeError as e:
         # Library may not support pin_rst parameter
         print(f"[WARN] Method 1 failed (pin_rst param): {e}")
