@@ -129,86 +129,27 @@ html, body {
 
 
 .card-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
   border-left: 1px solid rgba(255,255,255,0.1);
   position: relative;
 }
 
-/* 4-panel diagonal collage */
-.collage {
-  width: 300px;
-  height: 600px;
-  position: relative;
+.member-avatar {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
   overflow: hidden;
+  border: 3px solid rgba(255,255,255,0.4);
 }
 
-.collage-panel {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.collage-panel img {
+.member-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
-  display: block;
-}
-
-/* Top-left panel */
-.collage-panel.p1 {
-  clip-path: polygon(0 0, 55% 0, 45% 50%, 0 50%);
-}
-
-/* Top-right panel */
-.collage-panel.p2 {
-  clip-path: polygon(55% 0, 100% 0, 100% 50%, 45% 50%);
-}
-
-/* Bottom-left panel */
-.collage-panel.p3 {
-  clip-path: polygon(0 50%, 55% 50%, 45% 100%, 0 100%);
-}
-
-/* Bottom-right panel — member photo */
-.collage-panel.p4 {
-  clip-path: polygon(55% 50%, 100% 50%, 100% 100%, 45% 100%);
-}
-
-/* Member photo specific styling */
-#memberPhoto {
   object-position: center top;
-  background-color: #000;
-}
-
-/* Diagonal divider lines */
-.collage::before,
-.collage::after {
-  content: '';
-  position: absolute;
-  background: rgba(255,255,255,0.15);
-  z-index: 10;
-  pointer-events: none;
-}
-
-/* Horizontal divider */
-.collage::before {
-  top: calc(50% - 1px);
-  left: 0;
-  width: 100%;
-  height: 2px;
-}
-
-/* Diagonal divider */
-.collage::after {
-  top: 0;
-  left: calc(50% - 1px);
-  width: 2px;
-  height: 100%;
-  transform-origin: center;
-  transform: rotate(-5deg);
 }
 
 #expiry-timer {
@@ -280,6 +221,7 @@ html, body {
   text-align: center; 
   border: 2px solid rgba(255,255,255,0.15); 
   width: 90%; 
+  text-transform: uppercase;
 }
 
 .expiration-countdown { 
