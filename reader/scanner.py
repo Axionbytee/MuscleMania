@@ -78,17 +78,6 @@ if IS_PI:
     if reader is None:
         print(f"[ERROR] MFRC522 reader initialization failed")
         sys.exit(1)
-    
-    # ── RC522 Frequency Tuning ───────────────────────────────────────────────────
-    # Increase internal timer frequency for faster card detection
-    # TModeReg: Set timer mode and prescaler to allow faster detection cycles
-    try:
-        reader.MFRC522_Write(0x2A, 0x80)  # TModeReg — TAuto=1 (auto timer start)
-        reader.MFRC522_Write(0x2B, 0xFF)  # TPrescalerReg — set max prescaler for timing
-        print(f"[INFO] RC522 frequency registers optimized for faster scanning")
-    except Exception as e:
-        print(f"[WARN] Could not optimize RC522 frequency registers: {e}")
-        print(f"[WARN] Scanner will still work, but at default speed")
 else:
     print("[WARNING] Not running on Raspberry Pi — scanner will be simulated")
     print("[INFO] This is normal for dev machines. Real scanning only works on Pi hardware.")
