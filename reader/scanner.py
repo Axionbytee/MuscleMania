@@ -31,14 +31,16 @@ if IS_PI:
     # ── SPI0 Configuration ───────────────────────────────────────────────────────
     # bus=0, device=0 → /dev/spidev0.0
     # pin_rst   → RC522 RST line (default GPIO 25)
+    # speed_hz  → SPI clock speed (8MHz for faster communication)
     PIN_RST = 25
+    SPI_SPEED = 8000000  # 8 MHz — tuned for faster card reading
     
     reader = None
     
-    # Try Method 1: Standard initialization with pin_rst parameter
+    # Try Method 1: Standard initialization with pin_rst and speed_hz parameters
     try:
-        reader = MFRC522(bus=0, device=0, pin_rst=PIN_RST)
-        print(f"[INFO] MFRC522 initialized on SPI0 (bus=0, device=0, pin_rst={PIN_RST})")
+        reader = MFRC522(bus=0, device=0, pin_rst=PIN_RST, speed_hz=SPI_SPEED)
+        print(f"[INFO] MFRC522 initialized on SPI0 (bus=0, device=0, pin_rst={PIN_RST}, speed={SPI_SPEED/1e6:.0f}MHz)")
     except TypeError as e:
         # Library may not support pin_rst parameter
         print(f"[WARN] Method 1 failed (pin_rst param): {e}")
@@ -76,6 +78,17 @@ if IS_PI:
     if reader is None:
         print(f"[ERROR] MFRC522 reader initialization failed")
         sys.exit(1)
+    
+    # ── RC522 Frequency Tuning ───────────────────────────────────────────────────
+    # Increase internal timer frequency for faster card detection
+    # TModeReg: Set timer mode and prescaler to allow faster detection cycles
+    try:
+        reader.MFRC522_Write(0x2A, 0x80)  # TModeReg — TAuto=1 (auto timer start)
+        reader.MFRC522_Write(0x2B, 0xFF)  # TPrescalerReg — set max prescaler for timing
+        print(f"[INFO] RC522 frequency registers optimized for faster scanning")
+    except Exception as e:
+        print(f"[WARN] Could not optimize RC522 frequency registers: {e}")
+        print(f"[WARN] Scanner will still work, but at default speed")
 else:
     print("[WARNING] Not running on Raspberry Pi — scanner will be simulated")
     print("[INFO] This is normal for dev machines. Real scanning only works on Pi hardware.")
@@ -207,7 +220,7 @@ try:
     while True:
         uid_str = read_card()
         if uid_str is None:
-            time.sleep(0.1)
+            time.sleep(0.02)  # 20ms polling — 50x per second for fast detection
             continue
         current_time = time.time()
 
