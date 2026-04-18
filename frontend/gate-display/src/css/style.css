@@ -282,6 +282,20 @@ html, body {
   width: 90%; 
 }
 
+.expiration-countdown { 
+  background: rgba(46, 204, 113, 0.15); 
+  border: 2px solid rgba(46, 204, 113, 0.4); 
+  padding: 15px 20px; 
+  border-radius: 20px; 
+  font-size: 18px; 
+  font-weight: 600; 
+  text-align: center; 
+  width: 90%; 
+  color: rgba(255, 255, 255, 0.85); 
+  text-transform: uppercase; 
+  letter-spacing: 2px; 
+}
+
 .bottom-row { display: flex; 
   justify-content: space-between; 
   width: 90%; 
