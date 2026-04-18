@@ -31,7 +31,7 @@ if IS_PI:
     # ── SPI0 Configuration ───────────────────────────────────────────────────────
     # bus=0, device=0 → /dev/spidev0.0
     # pin_rst   → RC522 RST line (default GPIO 25)
-    PIN_RST = 25
+    PIN_RST = 24
     
     reader = None
     
