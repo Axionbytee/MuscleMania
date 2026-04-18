@@ -117,7 +117,14 @@ router.put('/:id', authMiddleware, async (req, res) => {
     }
 
     // Update RFID if provided
-    if (req.body.rfidUid !== undefined) {
+    if (req.body.rfidUid !== undefined && req.body.rfidUid) {
+      // Check if the new UID is already assigned to a different member
+      const existingCard = await RfidCard.findOne({ uid: req.body.rfidUid });
+      if (existingCard && existingCard.memberId.toString() !== member._id.toString()) {
+        return res.status(409).json({ error: `RFID UID "${req.body.rfidUid}" is already assigned to another member` });
+      }
+
+      // Update or create the RFID card
       await RfidCard.findOneAndUpdate(
         { memberId: member._id },
         { uid: req.body.rfidUid, memberId: member._id, isActive: true },

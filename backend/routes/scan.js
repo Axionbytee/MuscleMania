@@ -2,6 +2,7 @@ import { Router } from 'express';
 import RfidCard from '../models/RfidCard.js';
 import Member from '../models/Member.js';
 import AttendanceLog from '../models/AttendanceLog.js';
+import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = Router();
 
@@ -98,6 +99,33 @@ router.post('/', async (req, res) => {
     console.error('[SCAN] Error:', err.message);
     return res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+/**
+ * POST /api/scan/capture/start
+ * Activate capture mode to intercept the next scan for admin member registration.
+ * Used by the Members page "Scan Card" button.
+ */
+router.post('/capture/start', authMiddleware, (req, res) => {
+  captureMode.active = true;
+  captureMode.uid = null;
+  captureMode.timestamp = Date.now();
+  return res.json({ success: true, message: 'Capture mode activated. Ready for RFID scan.' });
+});
+
+/**
+ * GET /api/scan/capture/result
+ * Check if a card has been captured and return the UID.
+ * Polled by the Members page while waiting for a scan.
+ */
+router.get('/capture/result', authMiddleware, (req, res) => {
+  if (captureMode.uid) {
+    const uid = captureMode.uid;
+    captureMode.uid = null; // Clear after retrieving
+    captureMode.active = false;
+    return res.json({ captured: true, uid });
+  }
+  return res.json({ captured: false, uid: null });
 });
 
 export default router;
