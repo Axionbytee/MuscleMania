@@ -112,6 +112,7 @@ function renderCard(data) {
     memberNameDisplay.innerText = 'UNREGISTERED CARD';
     issuedDateDisplay.innerText = '— — —';
     expiryDateDisplay.innerText = '— — —';
+    expirationCountdownDisplay.innerText = '— — —';
     timerDisplay.style.display = 'none';
     memberPhotoDisplay.src = 'src/assets/images/Naig.png';
   }
