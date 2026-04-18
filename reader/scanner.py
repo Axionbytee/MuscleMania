@@ -220,7 +220,7 @@ try:
     while True:
         uid_str = read_card()
         if uid_str is None:
-            time.sleep(0.02)  # 20ms polling — 50x per second for fast detection
+            time.sleep(0.1)
             continue
         current_time = time.time()
 
